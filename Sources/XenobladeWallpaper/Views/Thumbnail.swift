@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import XenoKit
 
 @MainActor
 final class ImageCache {
@@ -15,9 +16,11 @@ final class ImageCache {
     }
 }
 
+/// A frame thumbnail rendered aspect-fill (cover, no distortion) with a refined
+/// hairline border, matching the design tokens.
 struct Thumbnail: View {
     let url: URL?
-    var cornerRadius: CGFloat = 12
+    var cornerRadius: CGFloat = Xeno.Radius.md
 
     var body: some View {
         Group {
@@ -27,15 +30,16 @@ struct Thumbnail: View {
                     .aspectRatio(contentMode: .fill)
             } else {
                 ZStack {
-                    Rectangle().fill(.quaternary)
-                    Image(systemName: "photo").foregroundStyle(.secondary)
+                    Rectangle().fill(Xeno.Color.well)
+                    Image(systemName: "photo")
+                        .foregroundStyle(Xeno.Color.textTertiary)
                 }
             }
         }
         .clipShape(.rect(cornerRadius: cornerRadius))
         .overlay(
             RoundedRectangle(cornerRadius: cornerRadius)
-                .strokeBorder(.white.opacity(0.12), lineWidth: 1)
+                .strokeBorder(Xeno.Color.hairline, lineWidth: 1)
         )
     }
 }

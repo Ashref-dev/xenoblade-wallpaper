@@ -41,6 +41,7 @@ public final class SettingsStore {
         static let updateIntervalMinutes = "updateIntervalMinutes"
         static let isEnabled = "isEnabled"
         static let showInDock = "showInDock"
+        static let showMenuBarIcon = "showMenuBarIcon"
     }
 
     public var latitude: Double { didSet { defaults.set(latitude, forKey: Key.latitude) } }
@@ -49,6 +50,7 @@ public final class SettingsStore {
     public var updateIntervalMinutes: Int { didSet { defaults.set(updateIntervalMinutes, forKey: Key.updateIntervalMinutes) } }
     public var isEnabled: Bool { didSet { defaults.set(isEnabled, forKey: Key.isEnabled) } }
     public var showInDock: Bool { didSet { defaults.set(showInDock, forKey: Key.showInDock) } }
+    public var showMenuBarIcon: Bool { didSet { defaults.set(showMenuBarIcon, forKey: Key.showMenuBarIcon) } }
 
     private init() {
         defaults.register(defaults: [
@@ -57,7 +59,8 @@ public final class SettingsStore {
             Key.locationName: LocationPreset.tunis.name,
             Key.updateIntervalMinutes: 5,
             Key.isEnabled: true,
-            Key.showInDock: false
+            Key.showInDock: false,
+            Key.showMenuBarIcon: true
         ])
         latitude = defaults.double(forKey: Key.latitude)
         longitude = defaults.double(forKey: Key.longitude)
@@ -65,6 +68,7 @@ public final class SettingsStore {
         updateIntervalMinutes = max(1, defaults.integer(forKey: Key.updateIntervalMinutes))
         isEnabled = defaults.bool(forKey: Key.isEnabled)
         showInDock = defaults.bool(forKey: Key.showInDock)
+        showMenuBarIcon = defaults.bool(forKey: Key.showMenuBarIcon)
     }
 
     public func apply(preset: LocationPreset) {

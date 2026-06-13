@@ -38,6 +38,8 @@ cp "$BUILD_BIN" "$MACOS/$APP_NAME"
 cp "$ROOT/Info.plist" "$CONTENTS/Info.plist"
 cp "$ROOT/Icon/AppIcon.icns" "$RES/AppIcon.icns"
 cp "$ROOT/Resources/AppIcon-256.png" "$RES/AppIcon-256.png"
+cp "$ROOT/Resources/MonadoTemplate.png" "$RES/MonadoTemplate.png"
+cp "$ROOT/Resources/MonadoTemplate@2x.png" "$RES/MonadoTemplate@2x.png"
 
 echo "==> Bundling 16 frames"
 for n in $(seq 1 16); do
@@ -55,6 +57,33 @@ sleep 0.5
 rm -rf "$DEST"
 cp -R "$APP" "$DEST"
 echo "==> Delivered: $DEST"
+
+echo "==> Building DMG"
+DMG="$HOME/Desktop/$DISPLAY_APP.dmg"
+STAGE="$(mktemp -d)"
+cp -R "$APP" "$STAGE/$DISPLAY_APP.app"
+rm -f "$DMG"
+if command -v create-dmg >/dev/null 2>&1; then
+    create-dmg \
+        --volname "$DISPLAY_APP" \
+        --volicon "$ROOT/Icon/AppIcon.icns" \
+        --window-pos 200 120 \
+        --window-size 640 400 \
+        --icon-size 128 \
+        --icon "$DISPLAY_APP.app" 170 190 \
+        --app-drop-link 470 190 \
+        --hide-extension "$DISPLAY_APP.app" \
+        "$DMG" "$STAGE" >/dev/null 2>&1 || true
+fi
+# create-dmg can exit non-zero while still producing a valid image; fall back to
+# hdiutil only if no DMG was written.
+if [ ! -f "$DMG" ]; then
+    ln -s /Applications "$STAGE/Applications"
+    hdiutil create -volname "$DISPLAY_APP" -srcfolder "$STAGE" \
+        -ov -format UDZO "$DMG" >/dev/null
+fi
+rm -rf "$STAGE"
+echo "==> DMG: $DMG"
 
 if [ "$RUN" -eq 1 ]; then
     open "$DEST"

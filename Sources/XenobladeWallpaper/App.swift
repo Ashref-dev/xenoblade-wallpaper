@@ -9,12 +9,18 @@ struct XenobladeWallpaperApp: App {
     @State private var settings = SettingsStore.shared
 
     var body: some Scene {
-        MenuBarExtra {
+        @Bindable var settings = settings
+
+        MenuBarExtra(isInserted: $settings.showMenuBarIcon) {
             MenuView()
                 .environment(settings)
                 .environment(appDelegate.engine)
         } label: {
-            Image(systemName: menuBarSymbol)
+            if let image = monadoTemplateImage {
+                Image(nsImage: image)
+            } else {
+                Image(systemName: menuBarSymbol)
+            }
         }
         .menuBarExtraStyle(.window)
 
@@ -25,6 +31,16 @@ struct XenobladeWallpaperApp: App {
         }
         .windowResizability(.contentSize)
         .defaultSize(width: 480, height: 720)
+    }
+
+    /// The Monado glyph used as a template (monochrome, tinted by the menu bar).
+    /// Falls back to an SF Symbol if the bundled asset is missing.
+    private var monadoTemplateImage: NSImage? {
+        guard let url = Bundle.main.url(forResource: "MonadoTemplate", withExtension: "png"),
+              let image = NSImage(contentsOf: url) else { return nil }
+        image.isTemplate = true
+        image.size = NSSize(width: 18, height: 18)
+        return image
     }
 
     private var menuBarSymbol: String {
