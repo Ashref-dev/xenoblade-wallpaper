@@ -7,7 +7,6 @@ import XenoKit
 struct MenuView: View {
     @Environment(SettingsStore.self) private var settings
     @Environment(WallpaperEngine.self) private var engine
-    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         @Bindable var settings = settings
@@ -61,8 +60,7 @@ struct MenuView: View {
 
             HStack(spacing: Xeno.Spacing.sm) {
                 Button {
-                    NSApp.activate(ignoringOtherApps: true)
-                    openWindow(id: "main")
+                    WindowOpener.shared.open?()
                 } label: {
                     Label("Open", systemImage: "macwindow")
                 }

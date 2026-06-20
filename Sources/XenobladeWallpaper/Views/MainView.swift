@@ -8,7 +8,6 @@ import XenoKit
 struct MainView: View {
     @Environment(SettingsStore.self) private var settings
     @Environment(WallpaperEngine.self) private var engine
-    @Environment(\.openWindow) private var openWindow
 
     @State private var launchAtLogin = LoginItem.isEnabled
     @State private var section: Section = .now
@@ -53,12 +52,6 @@ struct MainView: View {
         .frame(minWidth: 460, idealWidth: 600, maxWidth: .infinity,
                minHeight: 560, idealHeight: 760, maxHeight: .infinity)
         .background(Xeno.Color.background)
-        .onAppear {
-            WindowOpener.shared.open = {
-                NSApp.activate(ignoringOtherApps: true)
-                openWindow(id: "main")
-            }
-        }
     }
 
     private func nowContent(settings: SettingsStore) -> some View {

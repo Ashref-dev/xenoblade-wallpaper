@@ -23,14 +23,6 @@ struct XenobladeWallpaperApp: App {
             }
         }
         .menuBarExtraStyle(.window)
-
-        Window("Xenoblade Wallpaper", id: "main") {
-            MainView()
-                .environment(settings)
-                .environment(appDelegate.engine)
-        }
-        .windowResizability(.contentMinSize)
-        .defaultSize(width: 600, height: 760)
     }
 
     /// The Monado glyph used as a template (monochrome, tinted by the menu bar).
@@ -57,12 +49,14 @@ struct XenobladeWallpaperApp: App {
 final class AppDelegate: NSObject, NSApplicationDelegate {
 
     let engine = WallpaperEngine(settings: SettingsStore.shared)
+    private var mainWindow: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        WindowOpener.shared.open = { [weak self] in self?.revealMainWindow() }
         applyActivationPolicy()
         engine.start()
         observeSettings()
-        NSApp.activate(ignoringOtherApps: true)
+        revealMainWindow()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -70,9 +64,39 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        NSApp.activate(ignoringOtherApps: true)
-        WindowOpener.shared.open?()
+        revealMainWindow()
         return true
+    }
+
+    /// Force the main window to appear and come to the front, even when the app
+    /// runs as a hidden agent (no menu-bar icon and no Dock icon). The window is
+    /// AppKit-managed so it can be shown without a SwiftUI Window scene, which an
+    /// LSUIElement app never auto-opens. orderFrontRegardless is required because
+    /// an accessory app cannot always make a window key on its own.
+    func revealMainWindow() {
+        let window = mainWindow ?? makeMainWindow()
+        mainWindow = window
+        NSApp.activate(ignoringOtherApps: true)
+        window.makeKeyAndOrderFront(nil)
+        window.orderFrontRegardless()
+    }
+
+    private func makeMainWindow() -> NSWindow {
+        let hosting = NSHostingController(
+            rootView: MainView()
+                .environment(SettingsStore.shared)
+                .environment(engine)
+        )
+        let window = NSWindow(contentViewController: hosting)
+        window.title = "Xenoblade Wallpaper"
+        window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
+        window.isReleasedWhenClosed = false
+        window.isRestorable = false
+        window.identifier = NSUserInterfaceItemIdentifier("main")
+        window.setContentSize(NSSize(width: 600, height: 760))
+        window.contentMinSize = NSSize(width: 460, height: 560)
+        window.center()
+        return window
     }
 
     private func applyActivationPolicy() {
