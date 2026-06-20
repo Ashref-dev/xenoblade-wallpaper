@@ -29,8 +29,8 @@ struct XenobladeWallpaperApp: App {
                 .environment(settings)
                 .environment(appDelegate.engine)
         }
-        .windowResizability(.contentSize)
-        .defaultSize(width: 480, height: 720)
+        .windowResizability(.contentMinSize)
+        .defaultSize(width: 600, height: 760)
     }
 
     /// The Monado glyph used as a template (monochrome, tinted by the menu bar).

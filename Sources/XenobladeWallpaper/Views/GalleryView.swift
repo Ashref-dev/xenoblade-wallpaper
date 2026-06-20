@@ -9,7 +9,7 @@ struct GalleryView: View {
     @Environment(WallpaperEngine.self) private var engine
 
     private let columns = [
-        GridItem(.adaptive(minimum: 152, maximum: 220), spacing: Xeno.Spacing.md)
+        GridItem(.adaptive(minimum: 168, maximum: 260), spacing: Xeno.Spacing.lg)
     ]
 
     private var frames: [GalleryData.Frame] {
@@ -19,7 +19,7 @@ struct GalleryView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Xeno.Spacing.md) {
+        VStack(alignment: .leading, spacing: Xeno.Spacing.lg) {
             HStack(spacing: Xeno.Spacing.sm) {
                 Text("Day Cycle")
                     .font(.headline)
@@ -29,12 +29,13 @@ struct GalleryView: View {
                 Spacer()
             }
 
-            LazyVGrid(columns: columns, spacing: Xeno.Spacing.md) {
+            LazyVGrid(columns: columns, spacing: Xeno.Spacing.lg) {
                 ForEach(frames) { frame in
                     GalleryFrameCard(frame: frame)
                 }
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -43,10 +44,10 @@ private struct GalleryFrameCard: View {
     let frame: GalleryData.Frame
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Xeno.Spacing.sm) {
+        VStack(alignment: .leading, spacing: Xeno.Spacing.md) {
             ZStack(alignment: .topTrailing) {
                 Thumbnail(url: frame.imageURL, cornerRadius: Xeno.Radius.md)
-                    .frame(height: 92)
+                    .aspectRatio(16.0 / 10.0, contentMode: .fit)
                     .frame(maxWidth: .infinity)
                 if frame.isCurrent {
                     Text("Now")
@@ -59,10 +60,11 @@ private struct GalleryFrameCard: View {
                 }
             }
 
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: Xeno.Spacing.xs) {
                 Text(frame.label)
                     .font(.subheadline.weight(.semibold))
                     .lineLimit(1)
+                    .minimumScaleFactor(0.85)
                 HStack(spacing: Xeno.Spacing.xs) {
                     Image(systemName: frame.isRising ? "arrow.up" : "arrow.down")
                         .font(.caption2.weight(.bold))
@@ -73,11 +75,12 @@ private struct GalleryFrameCard: View {
                     Text(frame.isRising ? "rising" : "setting")
                         .font(.caption2)
                         .foregroundStyle(Xeno.Color.textTertiary)
+                        .lineLimit(1)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(Xeno.Spacing.sm)
+        .padding(Xeno.Spacing.md)
         .background(surface)
         .overlay(
             RoundedRectangle(cornerRadius: Xeno.Radius.lg)

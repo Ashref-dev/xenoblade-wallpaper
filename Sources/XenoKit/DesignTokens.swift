@@ -75,6 +75,17 @@ public enum Xeno {
         public static let lg: CGFloat = 16
         public static let xl: CGFloat = 22
         public static let xxl: CGFloat = 32
+        public static let section: CGFloat = 28
+    }
+
+    // MARK: - Layout
+
+    /// Content widths that keep the window calm at large sizes instead of
+    /// stretching forms and grids edge to edge.
+    public enum Layout {
+        public static let readableWidth: CGFloat = 560
+        public static let maxContentWidth: CGFloat = 880
+        public static let contentInset: CGFloat = 28
     }
 
     // MARK: - Corner radii

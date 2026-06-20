@@ -12,13 +12,13 @@ struct MenuView: View {
     var body: some View {
         @Bindable var settings = settings
 
-        VStack(alignment: .leading, spacing: Xeno.Spacing.md) {
+        VStack(alignment: .leading, spacing: Xeno.Spacing.lg) {
             HStack(spacing: Xeno.Spacing.sm) {
                 Image(systemName: "sun.max")
                     .font(.title3)
                     .foregroundStyle(Xeno.Color.accent)
                     .symbolRenderingMode(.hierarchical)
-                VStack(alignment: .leading, spacing: 1) {
+                VStack(alignment: .leading, spacing: 2) {
                     Text("Xenoblade Wallpaper").font(.subheadline.weight(.semibold))
                     Text(settings.locationName)
                         .font(.caption)
@@ -75,7 +75,7 @@ struct MenuView: View {
                 .buttonStyle(.xenoSecondary)
             }
         }
-        .padding(Xeno.Spacing.lg)
-        .frame(width: 320)
+        .padding(Xeno.Spacing.xl)
+        .frame(width: 332)
     }
 }

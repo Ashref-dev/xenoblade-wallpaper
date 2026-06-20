@@ -27,28 +27,31 @@ struct MainView: View {
             Divider().overlay(Xeno.Color.hairline)
 
             ScrollView {
-                VStack(spacing: Xeno.Spacing.lg) {
+                VStack(spacing: Xeno.Spacing.section) {
                     Picker("Section", selection: $section) {
                         ForEach(Section.allCases) { Text($0.rawValue).tag($0) }
                     }
                     .pickerStyle(.segmented)
                     .labelsHidden()
+                    .frame(maxWidth: Xeno.Layout.readableWidth)
 
                     switch section {
                     case .now:
-                        statusCard
-                        locationCard(settings: settings)
-                        optionsCard(settings: settings)
+                        nowContent(settings: settings)
                     case .gallery:
                         GalleryView()
                     }
 
                     footer
+                        .frame(maxWidth: Xeno.Layout.readableWidth)
                 }
-                .padding(Xeno.Spacing.lg)
+                .padding(Xeno.Layout.contentInset)
+                .frame(maxWidth: Xeno.Layout.maxContentWidth)
+                .frame(maxWidth: .infinity)
             }
         }
-        .frame(minWidth: 520, minHeight: 600)
+        .frame(minWidth: 460, idealWidth: 600, maxWidth: .infinity,
+               minHeight: 560, idealHeight: 760, maxHeight: .infinity)
         .background(Xeno.Color.background)
         .onAppear {
             WindowOpener.shared.open = {
@@ -56,6 +59,15 @@ struct MainView: View {
                 openWindow(id: "main")
             }
         }
+    }
+
+    private func nowContent(settings: SettingsStore) -> some View {
+        VStack(spacing: Xeno.Spacing.section) {
+            statusCard
+            locationSection(settings: settings)
+            optionsSection(settings: settings)
+        }
+        .frame(maxWidth: Xeno.Layout.readableWidth)
     }
 
     // MARK: - Header (hero)
@@ -69,10 +81,10 @@ struct MainView: View {
                     Image(systemName: "sun.max.fill").resizable().foregroundStyle(Xeno.Color.accent)
                 }
             }
-            .frame(width: 40, height: 40)
+            .frame(width: 38, height: 38)
             .clipShape(.rect(cornerRadius: Xeno.Radius.md))
 
-            VStack(alignment: .leading, spacing: 1) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text("Xenoblade Wallpaper")
                     .font(.headline)
                 Text("Your desktop follows the sun over Bionis.")
@@ -81,20 +93,20 @@ struct MainView: View {
             }
             Spacer()
         }
-        .padding(.horizontal, Xeno.Spacing.lg)
-        .padding(.vertical, Xeno.Spacing.md)
+        .padding(.horizontal, Xeno.Layout.contentInset)
+        .padding(.vertical, Xeno.Spacing.lg)
     }
 
     // MARK: - Now
 
     private var statusCard: some View {
-        VStack(alignment: .leading, spacing: Xeno.Spacing.md) {
+        VStack(alignment: .leading, spacing: Xeno.Spacing.lg) {
             cardTitle("Now", systemImage: "sun.max")
             SunArcView(position: engine.currentPosition)
-            HStack(spacing: Xeno.Spacing.md) {
+            HStack(spacing: Xeno.Spacing.lg) {
                 Thumbnail(url: engine.frameImageURL(engine.currentFrame?.fileNumber ?? 1))
-                    .frame(width: 116, height: 70)
-                VStack(alignment: .leading, spacing: 3) {
+                    .frame(width: 120, height: 74)
+                VStack(alignment: .leading, spacing: Xeno.Spacing.xs) {
                     Text(engine.currentFrame?.label ?? "-")
                         .font(.headline)
                     if let position = engine.currentPosition {
@@ -110,16 +122,16 @@ struct MainView: View {
                 Spacer()
             }
         }
-        .xenoCard(glass: true)
+        .xenoCard(padding: Xeno.Spacing.xl, glass: true)
     }
 
-    private func locationCard(settings: SettingsStore) -> some View {
+    private func locationSection(settings: SettingsStore) -> some View {
         @Bindable var settings = settings
-        return VStack(alignment: .leading, spacing: Xeno.Spacing.md) {
-            cardTitle("Location", systemImage: "location")
+        return section("Location", systemImage: "location") {
             Text("Computed from these coordinates only - never from Location Services, so it stays accurate to your city.")
                 .font(.caption)
                 .foregroundStyle(Xeno.Color.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: Xeno.Spacing.sm) {
@@ -148,34 +160,33 @@ struct MainView: View {
                 }
             }
         }
-        .xenoCard()
     }
 
-    private func optionsCard(settings: SettingsStore) -> some View {
+    private func optionsSection(settings: SettingsStore) -> some View {
         @Bindable var settings = settings
-        return VStack(alignment: .leading, spacing: Xeno.Spacing.md) {
-            cardTitle("Options", systemImage: "gearshape")
-            Toggle("Cycle wallpaper with the sun", isOn: $settings.isEnabled)
-                .tint(Xeno.Color.accent)
-            Toggle("Launch at login", isOn: $launchAtLogin)
-                .tint(Xeno.Color.accent)
-                .onChange(of: launchAtLogin) { _, newValue in LoginItem.setEnabled(newValue) }
-            Toggle("Show in Dock", isOn: $settings.showInDock)
-                .tint(Xeno.Color.accent)
-            VStack(alignment: .leading, spacing: Xeno.Spacing.xs) {
-                Toggle("Show menu bar icon", isOn: $settings.showMenuBarIcon)
+        return section("Options", systemImage: "gearshape") {
+            VStack(alignment: .leading, spacing: Xeno.Spacing.md) {
+                Toggle("Cycle wallpaper with the sun", isOn: $settings.isEnabled)
                     .tint(Xeno.Color.accent)
-                Text("When hidden, the app keeps running. Open it again to show this window.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            Divider().overlay(Xeno.Color.hairline)
-            Stepper(value: $settings.updateIntervalMinutes, in: 1...60) {
-                Text("Update every \(settings.updateIntervalMinutes) min")
-                    .font(.callout)
+                Toggle("Launch at login", isOn: $launchAtLogin)
+                    .tint(Xeno.Color.accent)
+                    .onChange(of: launchAtLogin) { _, newValue in LoginItem.setEnabled(newValue) }
+                Toggle("Show in Dock", isOn: $settings.showInDock)
+                    .tint(Xeno.Color.accent)
+                VStack(alignment: .leading, spacing: Xeno.Spacing.xs) {
+                    Toggle("Show menu bar icon", isOn: $settings.showMenuBarIcon)
+                        .tint(Xeno.Color.accent)
+                    Text("When hidden, the app keeps running. Open it again to show this window.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Stepper(value: $settings.updateIntervalMinutes, in: 1...60) {
+                    Text("Update every \(settings.updateIntervalMinutes) min")
+                        .font(.callout)
+                }
             }
         }
-        .xenoCard()
     }
 
     private var footer: some View {
@@ -207,6 +218,16 @@ struct MainView: View {
         Label(title, systemImage: systemImage)
             .font(.subheadline.weight(.semibold))
             .foregroundStyle(Xeno.Color.textPrimary)
+    }
+
+    private func section<Content: View>(_ title: String,
+                                        systemImage: String,
+                                        @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: Xeno.Spacing.md) {
+            cardTitle(title, systemImage: systemImage)
+            content()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func labeledField<Content: View>(_ label: String, @ViewBuilder content: () -> Content) -> some View {
