@@ -54,6 +54,35 @@ import AppKit
         }
     }
 
+    @MainActor @Test func trimsBakedInBlackLetterboxBand() throws {
+        // Source art with a black band baked into the bottom (like the real frames)
+        // must render with NO black bar on any edge: the band is trimmed first.
+        let source = Self.imageWithBlackBottomBand(
+            size: NSSize(width: 400, height: 400), bandHeight: 40, content: .red
+        )
+        let data = try #require(AspectFill.renderPNG(source, to: CGSize(width: 600, height: 400)))
+        let rep = try #require(NSBitmapImageRep(data: data))
+        #expect(rep.pixelsWide == 600)
+        #expect(rep.pixelsHigh == 400)
+
+        for (x, y) in [(1, 1), (300, 200), (598, 398), (1, 398), (598, 1)] {
+            let color = try #require(rep.colorAt(x: x, y: y))
+            #expect(color.redComponent > 0.8, "edge pixel (\(x),\(y)) should be content, not a black bar")
+            #expect(color.blueComponent < 0.3)
+        }
+    }
+
+    @MainActor private static func imageWithBlackBottomBand(size: NSSize, bandHeight: CGFloat, content: NSColor) -> NSImage {
+        let image = NSImage(size: size)
+        image.lockFocus()
+        content.setFill()
+        NSRect(origin: .zero, size: size).fill()
+        NSColor.black.setFill()
+        NSRect(x: 0, y: 0, width: size.width, height: bandHeight).fill()
+        image.unlockFocus()
+        return image
+    }
+
     @MainActor private static func solidImage(_ color: NSColor, _ size: NSSize) -> NSImage {
         let image = NSImage(size: size)
         image.lockFocus()
